@@ -1,0 +1,1882 @@
+```html
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CutFlow Studio — AI Video Editor &amp; Browser NLE (36+ Pro Tools • 5 Free Exports)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        canvas: '#07090E',
+                        surface: '#0F131C',
+                        surfaceHover: '#161B28',
+                        indigoBrand: '#6366F1',
+                        cyanBrand: '#06B6D4',
+                        emeraldBrand: '#10B981',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #07090E;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+        .glass-nav {
+            background: rgba(7, 9, 14, 0.84);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .card-border {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .brand-gradient {
+            background: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%);
+        }
+        .brand-gradient:hover {
+            background: linear-gradient(135deg, #4F46E5 0%, #0891B2 100%);
+        }
+        .text-brand-gradient {
+            background: linear-gradient(135deg, #818CF8 0%, #22D3EE 55%, #34D399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Virtual Backdrops for AI Background Remover */
+        .backdrop-transparent {
+            background-color: #1A202C;
+            background-image:
+                linear-gradient(45deg, #2D3748 25%, transparent 25%),
+                linear-gradient(-45deg, #2D3748 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #2D3748 75%),
+                linear-gradient(-45deg, transparent 75%, #2D3748 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+        }
+        .backdrop-cyberpunk {
+            background: radial-gradient(circle at 20% 20%, #EC4899 0%, #4F46E5 45%, #090D16 100%);
+        }
+        .backdrop-office {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 50%, #0F172A 100%);
+        }
+        .backdrop-bokeh {
+            background: radial-gradient(circle at 75% 25%, #06B6D4 0%, #312E81 55%, #07090E 100%);
+        }
+        .backdrop-sunset {
+            background: linear-gradient(180deg, #F59E0B 0%, #E11D48 52%, #1E1B4B 100%);
+        }
+        .backdrop-greenscreen {
+            background-color: #00FF00;
+        }
+
+        /* Camera Motion Keyframe Animations */
+        @keyframes kenBurnsZoom {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.14); }
+        }
+        @keyframes dynamicPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        @keyframes handheldShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2px, -2px) rotate(0.4deg); }
+            50% { transform: translate(-2px, 1px) rotate(-0.4deg); }
+            75% { transform: translate(1px, 2px) rotate(0.2deg); }
+        }
+        @keyframes rgbGlitch {
+            0%, 100% { transform: translate(0); filter: hue-rotate(0deg); }
+            20% { transform: translate(-3px, 1px); filter: hue-rotate(85deg); }
+            40% { transform: translate(3px, -1px); filter: hue-rotate(175deg); }
+            60% { transform: translate(-2px, -2px); filter: hue-rotate(265deg); }
+        }
+        .motion-zoom { animation: kenBurnsZoom 6s ease-in-out infinite; }
+        .motion-pulse { animation: dynamicPulse 0.85s ease-in-out infinite; }
+        .motion-shake { animation: handheldShake 0.45s ease-in-out infinite; }
+        .vfx-glitch-on { animation: rgbGlitch 0.35s infinite; }
+
+        /* Custom Range Inputs */
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 5px;
+            background: #1E293B;
+            border-radius: 999px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #06B6D4;
+            border: 2px solid #FFFFFF;
+            margin-top: -4.5px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-indigoBrand/30 selection:text-indigo-200">
+
+    <!-- 1. STICKY GLASSMORPHIC NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 glass-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
+            <!-- Brand Logo + Live Quota Badge -->
+            <div class="flex items-center gap-3">
+                <a href="#" class="flex items-center gap-2.5 group">
+                    <div class="w-10 h-10 rounded-xl brand-gradient flex items-center justify-center shadow-lg shadow-indigo-600/25">
+                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            <line x1="19" y1="4" x2="19" y2="20"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="font-display font-extrabold text-lg sm:text-xl tracking-tight text-white block leading-none">
+                            CutFlow <span class="text-cyanBrand">Studio</span>
+                        </span>
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Browser AI NLE</span>
+                    </div>
+                </a>
+
+                <button type="button" onclick="openQuotaModal()" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emeraldBrand/15 border border-emeraldBrand/35 text-emeraldBrand text-xs font-bold hover:bg-emeraldBrand/25 transition-colors">
+                    <span class="w-2 h-2 rounded-full bg-emeraldBrand animate-pulse"></span>
+                    <span id="nav-quota-badge">5 Free Exports Left</span>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300">
+                <a href="#studio-workspace" class="hover:text-white transition-colors">Studio Demo</a>
+                <a href="#features-directory" class="hover:text-white transition-colors">36+ Features</a>
+                <a href="#comparison-matrix" class="hover:text-white transition-colors">Comparison</a>
+                <a href="#pricing-section" class="hover:text-white transition-colors">Pricing</a>
+                <a href="#faq-section" class="hover:text-white transition-colors">FAQ</a>
+            </nav>
+
+            <!-- WhatsApp Quick Icon + Launch Web Studio CTA -->
+            <div class="flex items-center gap-2.5">
+                <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20want%20to%20start%20editing%20or%20activate%20a%20plan." target="_blank" rel="noopener noreferrer" title="WhatsApp Support: +91 9160590555" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emeraldBrand/15 hover:bg-emeraldBrand/25 border border-emeraldBrand/35 text-emeraldBrand text-xs font-bold transition-all">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/></svg>
+                    <span class="hidden md:inline">+91 9160590555</span>
+                </a>
+
+                <a href="#studio-workspace" class="px-4 py-2.5 rounded-xl brand-gradient text-white font-display font-bold text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition-all">
+                    Launch Web Studio
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. HERO SECTION -->
+    <section class="relative pt-14 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-6">
+        <div class="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-indigoBrand/15 border border-indigoBrand/35 text-indigo-200 text-xs font-semibold">
+            <span class="px-2 py-0.5 rounded-full bg-emeraldBrand text-canvas text-[10px] font-black uppercase">AI-Powered Browser NLE</span>
+            <span>36+ Pro Tools • 5 Free Exports</span>
+        </div>
+
+        <h1 class="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-white max-w-4xl mx-auto leading-[1.08]">
+            Professional Video Editing. <span class="text-brand-gradient">Twice the Tools.</span> Zero Complexity.
+        </h1>
+
+        <p class="text-slate-300 text-sm sm:text-lg max-w-3xl mx-auto leading-relaxed">
+            Combine the multi-track precision of <strong class="text-white">Filmora &amp; KineMaster</strong> with the instant AI magic of <strong class="text-white">Vita &amp; InShot</strong>—right in your browser. Start with <strong class="text-emeraldBrand">5 full-featured videos completely free, no watermark</strong>.
+        </p>
+
+        <div class="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+            <a href="#studio-workspace" class="px-7 py-3.5 rounded-2xl brand-gradient text-white font-display font-bold text-sm sm:text-base shadow-xl shadow-indigo-600/30 transition-all">
+                Start Editing Free — 5 Videos
+            </a>
+            <a href="#pricing-section" class="px-6 py-3.5 rounded-2xl bg-surface hover:bg-surfaceHover card-border text-white font-display font-bold text-sm sm:text-base transition-all">
+                View Pricing Plans
+            </a>
+        </div>
+
+        <!-- Trust Metrics Strip -->
+        <div class="pt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+            <div class="bg-surface/90 card-border rounded-2xl p-3.5 text-center">
+                <div class="font-display font-extrabold text-lg sm:text-xl text-white">36+ Pro &amp; AI Tools</div>
+                <div class="text-xs text-slate-400">2X Mobile &amp; Desktop Editors</div>
+            </div>
+            <div class="bg-surface/90 card-border rounded-2xl p-3.5 text-center">
+                <div class="font-display font-extrabold text-lg sm:text-xl text-cyanBrand">4K 60fps Export</div>
+                <div class="text-xs text-slate-400">Ultra-Crisp High Bitrate</div>
+            </div>
+            <div class="bg-surface/90 card-border rounded-2xl p-3.5 text-center">
+                <div class="font-display font-extrabold text-lg sm:text-xl text-emeraldBrand">0 Watermarks</div>
+                <div class="text-xs text-slate-400">Included on Free &amp; Paid</div>
+            </div>
+            <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20need%20support." target="_blank" rel="noopener noreferrer" class="bg-surface/90 hover:bg-surfaceHover card-border rounded-2xl p-3.5 text-center transition-colors">
+                <div class="font-display font-extrabold text-lg sm:text-xl text-white">+91 9160590555</div>
+                <div class="text-xs text-emeraldBrand font-semibold">24/7 WhatsApp Support</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 3. INTERACTIVE BROWSER VIDEO EDITOR STUDIO (EMBEDDED NLE WORKSPACE) -->
+    <section id="studio-workspace" class="pb-24 px-3 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
+        <div class="bg-surface rounded-3xl border border-indigoBrand/35 shadow-2xl overflow-hidden">
+            
+            <!-- Top Studio Toolbar -->
+            <div class="bg-canvas/90 border-b border-white/10 px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                        <span class="w-3 h-3 rounded-full bg-emeraldBrand"></span>
+                    </div>
+                    <input type="text" id="studio-project-title" value="Creator_Viral_Reel_4K.mp4" aria-label="Project Name" class="bg-surface border border-white/10 focus:border-cyanBrand focus:outline-none rounded-lg px-2.5 py-1 font-mono text-xs text-white w-44 sm:w-56">
+
+                    <!-- Aspect Ratio Switcher -->
+                    <div class="flex items-center gap-1 bg-surface p-1 rounded-xl border border-white/10">
+                        <button type="button" onclick="setStudioAspect('16:9')" data-ar="16:9" class="ar-pill px-2.5 py-1 rounded-lg bg-indigoBrand text-white font-bold text-[11px]">16:9 YouTube</button>
+                        <button type="button" onclick="setStudioAspect('9:16')" data-ar="9:16" class="ar-pill px-2.5 py-1 rounded-lg text-slate-300 hover:text-white font-bold text-[11px]">9:16 Reels</button>
+                        <button type="button" onclick="setStudioAspect('1:1')" data-ar="1:1" class="ar-pill px-2.5 py-1 rounded-lg text-slate-300 hover:text-white font-bold text-[11px]">1:1</button>
+                        <button type="button" onclick="setStudioAspect('4:5')" data-ar="4:5" class="ar-pill px-2.5 py-1 rounded-lg text-slate-300 hover:text-white font-bold text-[11px]">4:5</button>
+                    </div>
+                </div>
+
+                <!-- Right Studio Actions -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button type="button" onclick="openQuotaModal()" id="studio-quota-pill" class="px-3 py-1.5 rounded-full bg-emeraldBrand/15 border border-emeraldBrand/40 text-emeraldBrand text-xs font-bold hover:bg-emeraldBrand/25 transition-colors">
+                        Free Tier: 5/5 Videos Remaining
+                    </button>
+
+                    <label class="cursor-pointer px-3.5 py-2 rounded-xl bg-surfaceHover hover:bg-white/10 border border-white/15 text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors">
+                        <svg class="w-4 h-4 text-cyanBrand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Upload Video</span>
+                        <input type="file" id="studio-file-upload" accept="video/*" class="hidden">
+                    </label>
+
+                    <button type="button" onclick="openExportModal()" class="px-4 py-2 rounded-xl brand-gradient text-white font-display font-bold text-xs sm:text-sm shadow-lg shadow-indigo-600/30 inline-flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        <span>Export Video (4K / 1080p)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Studio Grid: Left Tool Dock + Center Viewport + Bottom Timeline -->
+            <div class="grid lg:grid-cols-12">
+                
+                <!-- LEFT TOOL DOCK (6 Interactive Tabs) -->
+                <div class="lg:col-span-4 xl:col-span-4 bg-surface border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col">
+                    <!-- 6 Dock Tabs -->
+                    <div class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-3 gap-1 p-2.5 bg-canvas/60 border-b border-white/10">
+                        <button type="button" onclick="switchDockTab('ai')" data-dock="ai" class="dock-tab py-2 px-2 rounded-xl bg-indigoBrand text-white font-bold text-[11px]">AI Magic</button>
+                        <button type="button" onclick="switchDockTab('color')" data-dock="color" class="dock-tab py-2 px-2 rounded-xl bg-surfaceHover text-slate-300 hover:text-white font-bold text-[11px]">Color &amp; LUTs</button>
+                        <button type="button" onclick="switchDockTab('vfx')" data-dock="vfx" class="dock-tab py-2 px-2 rounded-xl bg-surfaceHover text-slate-300 hover:text-white font-bold text-[11px]">VFX &amp; Trans.</button>
+                        <button type="button" onclick="switchDockTab('motion')" data-dock="motion" class="dock-tab py-2 px-2 rounded-xl bg-surfaceHover text-slate-300 hover:text-white font-bold text-[11px]">Motion &amp; Speed</button>
+                        <button type="button" onclick="switchDockTab('audio')" data-dock="audio" class="dock-tab py-2 px-2 rounded-xl bg-surfaceHover text-slate-300 hover:text-white font-bold text-[11px]">Audio &amp; SFX</button>
+                        <button type="button" onclick="switchDockTab('text')" data-dock="text" class="dock-tab py-2 px-2 rounded-xl bg-surfaceHover text-slate-300 hover:text-white font-bold text-[11px]">Text &amp; Overlays</button>
+                    </div>
+
+                    <!-- Dock Tab Panels Container -->
+                    <div class="p-4 space-y-4 max-h-[540px] overflow-y-auto flex-1">
+                        
+                        <!-- TAB 1: AI MAGIC -->
+                        <div id="dock-panel-ai" class="dock-panel space-y-3.5">
+                            <!-- AI Background Remover + 6 Virtual Backdrops -->
+                            <div class="p-3.5 rounded-2xl bg-canvas border border-indigoBrand/35 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-xs font-bold text-white">AI Background Remover</div>
+                                        <div class="text-[10px] text-slate-400">Zero Green Screen Needed</div>
+                                    </div>
+                                    <input type="checkbox" id="toggle-ai-bg" class="w-4 h-4 accent-indigoBrand cursor-pointer">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">6 Virtual Studio Backdrops</span>
+                                    <div class="grid grid-cols-6 gap-1.5">
+                                        <button type="button" onclick="selectVirtualBackdrop('transparent')" data-vb="transparent" title="Transparent Grid" class="vb-btn h-7 rounded-lg backdrop-transparent border-2 border-cyanBrand"></button>
+                                        <button type="button" onclick="selectVirtualBackdrop('cyberpunk')" data-vb="cyberpunk" title="Cyberpunk Neon Studio" class="vb-btn h-7 rounded-lg backdrop-cyberpunk border border-white/20"></button>
+                                        <button type="button" onclick="selectVirtualBackdrop('office')" data-vb="office" title="Clean Minimal Office" class="vb-btn h-7 rounded-lg backdrop-office border border-white/20"></button>
+                                        <button type="button" onclick="selectVirtualBackdrop('bokeh')" data-vb="bokeh" title="Bokeh Gradient" class="vb-btn h-7 rounded-lg backdrop-bokeh border border-white/20"></button>
+                                        <button type="button" onclick="selectVirtualBackdrop('sunset')" data-vb="sunset" title="Sunset Rooftop" class="vb-btn h-7 rounded-lg backdrop-sunset border border-white/20"></button>
+                                        <button type="button" onclick="selectVirtualBackdrop('greenscreen')" data-vb="greenscreen" title="Green Screen #00FF00" class="vb-btn h-7 rounded-lg backdrop-greenscreen border border-white/20"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chroma Key Intensity Slider -->
+                            <div class="p-3 rounded-2xl bg-canvas border border-white/10 space-y-1.5">
+                                <div class="flex justify-between text-xs">
+                                    <span class="font-bold text-white">Chroma Key Intensity</span>
+                                    <span id="chroma-val-label" class="font-mono text-emeraldBrand">0%</span>
+                                </div>
+                                <input type="range" id="slider-chroma-key" min="0" max="100" value="0" class="w-full">
+                            </div>
+
+                            <!-- AI Auto-Captions + 3 Styles -->
+                            <div class="p-3.5 rounded-2xl bg-canvas border border-white/10 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white">AI Auto-Captions</span>
+                                    <input type="checkbox" id="toggle-ai-captions" checked class="w-4 h-4 accent-cyanBrand cursor-pointer">
+                                </div>
+                                <input type="text" id="input-caption-text" value="TWICE THE TOOLS — 5 VIDEOS FREE!" class="w-full px-3 py-1.5 rounded-xl bg-surface border border-white/10 text-xs text-white focus:outline-none focus:border-cyanBrand">
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button type="button" onclick="setCaptionStyle('hormozi')" data-cs="hormozi" class="cs-btn py-1.5 rounded-lg bg-yellow-400 text-canvas font-black text-[10px] ring-2 ring-white">HORMOZI POP</button>
+                                    <button type="button" onclick="setCaptionStyle('neon')" data-cs="neon" class="cs-btn py-1.5 rounded-lg bg-surface text-cyanBrand font-bold text-[10px]">NEON GLOW</button>
+                                    <button type="button" onclick="setCaptionStyle('cinema')" data-cs="cinema" class="cs-btn py-1.5 rounded-lg bg-surface text-white font-bold text-[10px]">CLEAN CINEMA</button>
+                                </div>
+                            </div>
+
+                            <!-- AI Voice Isolator & AI Auto-Reframe -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between cursor-pointer">
+                                    <span class="text-[11px] font-bold text-white">AI Voice Isolator</span>
+                                    <input type="checkbox" id="toggle-voice-isolator" checked class="w-4 h-4 accent-emeraldBrand">
+                                </label>
+                                <label class="p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between cursor-pointer">
+                                    <span class="text-[11px] font-bold text-white">AI Auto-Reframe</span>
+                                    <input type="checkbox" id="toggle-auto-reframe" class="w-4 h-4 accent-cyanBrand">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: COLOR & LUTS -->
+                        <div id="dock-panel-color" class="dock-panel hidden space-y-3.5">
+                            <div class="space-y-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">6 Cinematic 3D LUT Presets</span>
+                                <div class="grid grid-cols-2 gap-1.5">
+                                    <button type="button" onclick="applyColorLut('natural')" data-lut="natural" class="lut-btn py-2 px-2.5 rounded-xl bg-cyanBrand text-canvas font-extrabold text-xs text-left">Natural</button>
+                                    <button type="button" onclick="applyColorLut('teal')" data-lut="teal" class="lut-btn py-2 px-2.5 rounded-xl bg-canvas text-slate-200 font-semibold text-xs text-left">Teal &amp; Orange</button>
+                                    <button type="button" onclick="applyColorLut('kodak')" data-lut="kodak" class="lut-btn py-2 px-2.5 rounded-xl bg-canvas text-slate-200 font-semibold text-xs text-left">Kodak Portra Warm</button>
+                                    <button type="button" onclick="applyColorLut('noir')" data-lut="noir" class="lut-btn py-2 px-2.5 rounded-xl bg-canvas text-slate-200 font-semibold text-xs text-left">Moody Noir B&amp;W</button>
+                                    <button type="button" onclick="applyColorLut('reels')" data-lut="reels" class="lut-btn py-2 px-2.5 rounded-xl bg-canvas text-slate-200 font-semibold text-xs text-left">Vibrant Reels Pop</button>
+                                    <button type="button" onclick="applyColorLut('fuji')" data-lut="fuji" class="lut-btn py-2 px-2.5 rounded-xl bg-canvas text-slate-200 font-semibold text-xs text-left">Fuji Velvia</button>
+                                </div>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-canvas border border-white/10 space-y-2.5">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Real-Time Grading Sliders</span>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Exposure</span><span id="grade-exp-val" class="font-mono">100%</span></div>
+                                    <input type="range" id="grade-exp" min="60" max="150" value="100" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Contrast</span><span id="grade-con-val" class="font-mono">100%</span></div>
+                                    <input type="range" id="grade-con" min="60" max="160" value="100" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Saturation</span><span id="grade-sat-val" class="font-mono">100%</span></div>
+                                    <input type="range" id="grade-sat" min="0" max="200" value="100" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Temperature (Warm/Cool)</span><span id="grade-tmp-val" class="font-mono">0deg</span></div>
+                                    <input type="range" id="grade-tmp" min="-35" max="35" value="0" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: VFX & TRANSITIONS -->
+                        <div id="dock-panel-vfx" class="dock-panel hidden space-y-3">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Live Canvas VFX Overlays</span>
+                            <div class="space-y-2">
+                                <button type="button" onclick="toggleStudioVfx('glitch')" id="vfx-toggle-glitch" class="w-full p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between text-xs font-bold text-white">
+                                    <span>Glitch RGB Split</span>
+                                    <span id="vfx-state-glitch" class="text-[10px] font-mono text-slate-400">OFF</span>
+                                </button>
+                                <button type="button" onclick="toggleStudioVfx('grain')" id="vfx-toggle-grain" class="w-full p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between text-xs font-bold text-white">
+                                    <span>Vintage 35mm Film Grain</span>
+                                    <span id="vfx-state-grain" class="text-[10px] font-mono text-slate-400">OFF</span>
+                                </button>
+                                <button type="button" onclick="toggleStudioVfx('letterbox')" id="vfx-toggle-letterbox" class="w-full p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between text-xs font-bold text-white">
+                                    <span>Cinema 2.39:1 Letterbox Bars</span>
+                                    <span id="vfx-state-letterbox" class="text-[10px] font-mono text-slate-400">OFF</span>
+                                </button>
+                                <button type="button" onclick="toggleStudioVfx('vignette')" id="vfx-toggle-vignette" class="w-full p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between text-xs font-bold text-white">
+                                    <span>Soft Studio Vignette</span>
+                                    <span id="vfx-state-vignette" class="text-[10px] font-mono text-slate-400">OFF</span>
+                                </button>
+                                <button type="button" onclick="toggleStudioVfx('flare')" id="vfx-toggle-flare" class="w-full p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between text-xs font-bold text-white">
+                                    <span>Anamorphic Lens Flare</span>
+                                    <span id="vfx-state-flare" class="text-[10px] font-mono text-slate-400">OFF</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: MOTION & SPEED -->
+                        <div id="dock-panel-motion" class="dock-panel hidden space-y-4">
+                            <div class="space-y-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Speed Ramp Presets</span>
+                                <div class="grid grid-cols-2 gap-1.5">
+                                    <button type="button" onclick="setPlaybackSpeed(0.5)" data-spd="0.5" class="spd-btn py-2 px-3 rounded-xl bg-canvas text-slate-200 font-bold text-xs">0.5x Slow-Mo</button>
+                                    <button type="button" onclick="setPlaybackSpeed(1.0)" data-spd="1.0" class="spd-btn py-2 px-3 rounded-xl bg-indigoBrand text-white font-bold text-xs">1.0x Normal</button>
+                                    <button type="button" onclick="setPlaybackSpeed(1.5)" data-spd="1.5" class="spd-btn py-2 px-3 rounded-xl bg-canvas text-slate-200 font-bold text-xs">1.5x Crisp</button>
+                                    <button type="button" onclick="setPlaybackSpeed(2.0)" data-spd="2.0" class="spd-btn py-2 px-3 rounded-xl bg-canvas text-slate-200 font-bold text-xs">2.0x Timelapse</button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Keyframe Camera Motion</span>
+                                <div class="grid grid-cols-2 gap-1.5">
+                                    <button type="button" onclick="setCameraMotion('none')" data-mot="none" class="mot-btn py-2 px-3 rounded-xl bg-indigoBrand text-white font-bold text-xs">None</button>
+                                    <button type="button" onclick="setCameraMotion('zoom')" data-mot="zoom" class="mot-btn py-2 px-3 rounded-xl bg-canvas text-slate-200 font-bold text-xs">Ken Burns Zoom</button>
+                                    <button type="button" onclick="setCameraMotion('pulse')" data-mot="pulse" class="mot-btn py-2 px-3 rounded-xl bg-canvas text-slate-200 font-bold text-xs">Dynamic Pulse</button>
+                                    <button type="button" onclick="setCameraMotion('shake')" data-mot="shake" class="mot-btn py-2 px-3 rounded-xl bg-canvas text-slate-200 font-bold text-xs">Hand-held Shake</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 5: AUDIO & SFX (WEB AUDIO API SYNTHESIZER) -->
+                        <div id="dock-panel-audio" class="dock-panel hidden space-y-3.5">
+                            <div class="p-3.5 rounded-2xl bg-canvas border border-white/10 space-y-2.5">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Multi-Channel Mixer</span>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Voice Track (A1)</span><span id="vol-voice-val" class="font-mono">100%</span></div>
+                                    <input type="range" id="vol-voice" min="0" max="150" value="100" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Background Beat (A2)</span><span id="vol-beat-val" class="font-mono">65%</span></div>
+                                    <input type="range" id="vol-beat" min="0" max="150" value="65" class="w-full">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-300"><span>Sound Effects (SFX)</span><span id="vol-sfx-val" class="font-mono">85%</span></div>
+                                    <input type="range" id="vol-sfx" min="0" max="150" value="85" class="w-full">
+                                </div>
+                            </div>
+
+                            <label class="p-3 rounded-2xl bg-canvas border border-white/10 flex items-center justify-between cursor-pointer">
+                                <span class="text-xs font-bold text-white">AI Noise Removal (-45dB)</span>
+                                <input type="checkbox" id="toggle-ai-denoise" checked class="w-4 h-4 accent-emeraldBrand">
+                            </label>
+
+                            <div class="space-y-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Live Synth SFX Triggers (Click to Audition)</span>
+                                <div class="grid grid-cols-2 gap-1.5">
+                                    <button type="button" onclick="playSynthSfx('whoosh')" class="py-2 px-3 rounded-xl bg-canvas hover:bg-indigoBrand/25 border border-white/10 text-xs font-bold text-cyanBrand">⚡ Whoosh</button>
+                                    <button type="button" onclick="playSynthSfx('bass')" class="py-2 px-3 rounded-xl bg-canvas hover:bg-indigoBrand/25 border border-white/10 text-xs font-bold text-indigo-300">🔊 Bass Drop</button>
+                                    <button type="button" onclick="playSynthSfx('pop')" class="py-2 px-3 rounded-xl bg-canvas hover:bg-indigoBrand/25 border border-white/10 text-xs font-bold text-emeraldBrand">✨ Pop</button>
+                                    <button type="button" onclick="playSynthSfx('shutter')" class="py-2 px-3 rounded-xl bg-canvas hover:bg-indigoBrand/25 border border-white/10 text-xs font-bold text-amber-300">📸 Shutter</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 6: TEXT & OVERLAYS -->
+                        <div id="dock-panel-text" class="dock-panel hidden space-y-3">
+                            <div class="p-3.5 rounded-2xl bg-canvas border border-white/10 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white">Lower-Third Title Overlay</span>
+                                    <input type="checkbox" id="toggle-lower-third" checked class="w-4 h-4 accent-indigoBrand cursor-pointer">
+                                </div>
+                                <input type="text" id="input-lower-third" value="ALEX MERCER • TECH CREATOR" class="w-full px-3 py-1.5 rounded-xl bg-surface border border-white/10 text-xs text-white focus:outline-none focus:border-cyanBrand">
+
+                                <div class="space-y-1">
+                                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Accent Color</span>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="setLowerThirdColor('#06B6D4')" class="w-6 h-6 rounded-full bg-cyanBrand border-2 border-white"></button>
+                                        <button type="button" onclick="setLowerThirdColor('#6366F1')" class="w-6 h-6 rounded-full bg-indigoBrand border border-white/30"></button>
+                                        <button type="button" onclick="setLowerThirdColor('#10B981')" class="w-6 h-6 rounded-full bg-emeraldBrand border border-white/30"></button>
+                                        <button type="button" onclick="setLowerThirdColor('#F59E0B')" class="w-6 h-6 rounded-full bg-amber-400 border border-white/30"></button>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Overlay Position</span>
+                                    <div class="grid grid-cols-2 gap-1.5">
+                                        <button type="button" onclick="setLowerThirdPos('top-left')" data-ltp="top-left" class="ltp-btn py-1.5 rounded-lg bg-indigoBrand text-white text-[11px] font-bold">Top Left</button>
+                                        <button type="button" onclick="setLowerThirdPos('top-right')" data-ltp="top-right" class="ltp-btn py-1.5 rounded-lg bg-surface text-slate-300 text-[11px] font-bold">Top Right</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CENTER VIDEO PREVIEW CANVAS + BOTTOM 4-TRACK TIMELINE -->
+                <div class="lg:col-span-8 xl:col-span-8 bg-canvas p-4 sm:p-5 flex flex-col justify-between space-y-4">
+                    
+                    <!-- 4 Demo Clips Switcher Strip -->
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button type="button" onclick="selectDemoClip(0)" data-clip="0" class="clip-tab px-3 py-1.5 rounded-xl bg-indigoBrand text-white text-xs font-bold">1. Creator Talking Head</button>
+                            <button type="button" onclick="selectDemoClip(1)" data-clip="1" class="clip-tab px-3 py-1.5 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">2. Tech Product Showcase</button>
+                            <button type="button" onclick="selectDemoClip(2)" data-clip="2" class="clip-tab px-3 py-1.5 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">3. Travel Cinematic Drone</button>
+                            <button type="button" onclick="selectDemoClip(3)" data-clip="3" class="clip-tab px-3 py-1.5 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">4. Fitness Reel</button>
+                        </div>
+                        <button type="button" onclick="toggleSafeZones()" id="safe-zone-btn" class="px-2.5 py-1.5 rounded-xl bg-surface card-border text-[11px] font-mono text-slate-300 hover:text-white">
+                            Safe-Zones: OFF
+                        </button>
+                    </div>
+
+                    <!-- Viewport Stage -->
+                    <div class="relative min-h-[290px] sm:min-h-[340px] rounded-2xl bg-black/90 border border-white/10 flex items-center justify-center p-4 overflow-hidden">
+                        <div id="viewport-aspect-box" class="relative w-full max-w-xl aspect-video rounded-xl overflow-hidden border border-white/15 shadow-2xl transition-all duration-300 bg-surface flex items-center justify-center">
+                            
+                            <!-- HTML5 Real Uploaded Video Player -->
+                            <video id="studio-html5-video" class="hidden w-full h-full object-cover" loop playsinline></video>
+
+                            <!-- Animated Canvas Demo Clip Stage -->
+                            <canvas id="studio-demo-canvas" width="640" height="360" class="w-full h-full object-cover block"></canvas>
+
+                            <!-- VFX Overlays -->
+                            <div id="overlay-cinema-bars" class="hidden pointer-events-none absolute inset-0 flex flex-col justify-between">
+                                <div class="h-6 bg-black w-full"></div>
+                                <div class="h-6 bg-black w-full"></div>
+                            </div>
+                            <div id="overlay-vignette" class="hidden pointer-events-none absolute inset-0" style="box-shadow: inset 0 0 75px rgba(0,0,0,0.92);"></div>
+                            <div id="overlay-film-grain" class="hidden pointer-events-none absolute inset-0 opacity-25 backdrop-transparent mix-blend-overlay"></div>
+                            <div id="overlay-lens-flare" class="hidden pointer-events-none absolute -top-10 -right-10 w-48 h-48 rounded-full bg-cyanBrand/35 blur-2xl"></div>
+
+                            <!-- Safe-Zone Grid Guides -->
+                            <div id="overlay-safe-zones" class="hidden pointer-events-none absolute inset-4 border border-dashed border-cyanBrand/70 rounded-lg"></div>
+
+                            <!-- Custom Lower-Third Overlay -->
+                            <div id="overlay-lower-third" class="absolute top-3 left-3 pointer-events-none px-3 py-1 rounded-lg bg-black/80 border-l-4 border-cyanBrand text-[11px] font-display font-bold text-white shadow-lg">
+                                ALEX MERCER • TECH CREATOR
+                            </div>
+
+                            <!-- Active AI Status Badges -->
+                            <div id="overlay-ai-badges" class="absolute top-3 right-3 flex flex-col items-end gap-1 pointer-events-none">
+                                <span id="badge-bg-removed" class="hidden px-2 py-0.5 rounded bg-indigoBrand text-white text-[10px] font-bold">AI BG REMOVED</span>
+                                <span id="badge-voice-iso" class="px-2 py-0.5 rounded bg-emeraldBrand/90 text-canvas text-[10px] font-extrabold">AI VOICE ISOLATED</span>
+                            </div>
+
+                            <!-- Live Auto-Captions Overlay -->
+                            <div id="overlay-captions-wrap" class="absolute bottom-3.5 inset-x-3 text-center pointer-events-none">
+                                <span id="overlay-caption-pill" class="inline-block px-3.5 py-1.5 rounded-xl bg-black/85 font-display font-black text-xs sm:text-sm uppercase tracking-wide text-yellow-400 border border-yellow-400/40 shadow-xl">
+                                    TWICE THE TOOLS — 5 VIDEOS FREE!
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transport Controls -->
+                    <div class="bg-surface rounded-2xl p-3.5 border border-white/10 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="toggleStudioPlayback()" id="transport-play-btn" class="px-3.5 py-1.5 rounded-xl brand-gradient text-white text-xs font-bold">
+                                    Pause
+                                </button>
+                                <button type="button" onclick="stepSingleFrame()" class="px-2.5 py-1.5 rounded-xl bg-canvas border border-white/10 text-xs font-mono text-slate-300 hover:text-white" title="Step +1 Frame">
+                                    +1F
+                                </button>
+                                <button type="button" onclick="razorSplitClip()" class="px-2.5 py-1.5 rounded-xl bg-canvas border border-white/10 text-xs font-bold text-cyanBrand hover:bg-cyanBrand/15">
+                                    ✂ Split
+                                </button>
+                                <span id="studio-timecode-readout" class="font-mono text-xs text-cyanBrand font-bold ml-1">00:04.12 / 00:15.00</span>
+                            </div>
+                            <span id="split-status-toast" class="text-[11px] font-mono text-emeraldBrand">4-Track NLE Ready</span>
+                        </div>
+
+                        <!-- Scrubber + In/Out Trim Sliders -->
+                        <div class="grid sm:grid-cols-3 gap-2.5">
+                            <div>
+                                <div class="flex justify-between text-[10px] text-slate-400"><span>Playhead</span><span id="scrubber-time-val" class="font-mono">4.1s</span></div>
+                                <input type="range" id="studio-scrubber" min="0" max="15" value="4.1" step="0.1" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] text-slate-400"><span>Trim In</span><span id="trim-in-val" class="font-mono">0.5s</span></div>
+                                <input type="range" id="studio-trim-in" min="0" max="7" value="0.5" step="0.1" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[10px] text-slate-400"><span>Trim Out</span><span id="trim-out-val" class="font-mono">14.5s</span></div>
+                                <input type="range" id="studio-trim-out" min="7.5" max="15" value="14.5" step="0.1" class="w-full">
+                            </div>
+                        </div>
+
+                        <!-- 4-Track Visual NLE Timeline -->
+                        <div class="space-y-1.5 font-mono text-[10px]">
+                            <div class="h-5 rounded-lg bg-canvas border border-amber-400/30 px-2.5 flex items-center justify-between text-amber-300">
+                                <span>V2 • OVERLAY / AI AUTO-CAPTIONS</span>
+                                <span>SYNCED</span>
+                            </div>
+                            <div id="timeline-v1-bar" class="h-6 rounded-lg bg-gradient-to-r from-indigoBrand/45 via-cyanBrand/40 to-emeraldBrand/45 border border-cyanBrand/60 px-2.5 flex items-center justify-between text-white font-bold">
+                                <span>V1 • MAIN VIDEO TRACK</span>
+                                <span id="timeline-speed-tag">1.0x • 0 SPLITS</span>
+                            </div>
+                            <div class="h-5 rounded-lg bg-canvas border border-emeraldBrand/30 px-2.5 flex items-center justify-between text-emeraldBrand">
+                                <span>A1 • AI ISOLATED VOICEOVER</span>
+                                <span>-14 LUFS</span>
+                            </div>
+                            <div class="h-5 rounded-lg bg-canvas border border-indigoBrand/30 px-2.5 flex items-center justify-between text-indigo-300">
+                                <span>A2 • BACKGROUND MUSIC &amp; SYNTH SFX</span>
+                                <span>STEREO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 36+ PRO & AI FEATURES DIRECTORY -->
+    <section id="features-directory" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-white/10">
+        <div class="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <span class="text-xs font-bold uppercase tracking-widest text-cyanBrand">Double the Features of Filmora, Vita, KineMaster &amp; InShot</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-white">
+                36+ Pro &amp; AI Tools — <span class="text-brand-gradient">100% Included Free</span>
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base">
+                Every tool below is unlocked on your 5-video free trial as well as our ₹99, ₹299, and ₹599 plans.
+            </p>
+        </div>
+
+        <!-- Search Input & Category Filter Pills -->
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8">
+            <div class="flex flex-wrap items-center justify-center gap-1.5" id="directory-filter-pills">
+                <button type="button" onclick="filterToolsDirectory('all')" data-fcat="all" class="dir-pill px-3.5 py-2 rounded-xl bg-indigoBrand text-white text-xs font-bold">All 36 Tools</button>
+                <button type="button" onclick="filterToolsDirectory('ai')" data-fcat="ai" class="dir-pill px-3.5 py-2 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">AI Suite (10)</button>
+                <button type="button" onclick="filterToolsDirectory('timeline')" data-fcat="timeline" class="dir-pill px-3.5 py-2 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">Timeline &amp; Keyframes (8)</button>
+                <button type="button" onclick="filterToolsDirectory('color')" data-fcat="color" class="dir-pill px-3.5 py-2 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">Color &amp; VFX (8)</button>
+                <button type="button" onclick="filterToolsDirectory('audio')" data-fcat="audio" class="dir-pill px-3.5 py-2 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">Audio Studio (5)</button>
+                <button type="button" onclick="filterToolsDirectory('export')" data-fcat="export" class="dir-pill px-3.5 py-2 rounded-xl bg-surface text-slate-300 hover:text-white text-xs font-bold">Creator &amp; Export (5)</button>
+            </div>
+
+            <div class="w-full lg:w-72">
+                <input type="text" id="directory-search-input" placeholder="Search 36+ tools (e.g. Background, LUT, EQ)..." class="w-full px-4 py-2.5 rounded-xl bg-surface border border-white/15 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyanBrand">
+            </div>
+        </div>
+
+        <!-- 36 Feature Cards Grid -->
+        <div id="tools-directory-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- 5. COMPETITIVE COMPARISON MATRIX -->
+    <section id="comparison-matrix" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-white/10">
+        <div class="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <span class="text-xs font-bold uppercase tracking-widest text-indigoBrand">Honest Side-by-Side Comparison</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-white">CutFlow Studio vs. Traditional Editors</h2>
+        </div>
+
+        <div class="bg-surface rounded-3xl p-5 sm:p-8 card-border overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[760px] text-xs sm:text-sm">
+                <thead>
+                    <tr class="border-b border-white/10 text-slate-400 uppercase text-xs">
+                        <th class="py-3.5 px-4">Feature / Plan Metric</th>
+                        <th class="py-3.5 px-4 text-cyanBrand bg-cyanBrand/10 rounded-t-xl font-black">CutFlow Studio</th>
+                        <th class="py-3.5 px-4">Filmora</th>
+                        <th class="py-3.5 px-4">KineMaster</th>
+                        <th class="py-3.5 px-4">Vita</th>
+                        <th class="py-3.5 px-4">InShot</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/10">
+                    <tr>
+                        <td class="py-3.5 px-4 font-bold text-white">Total Tools &amp; AI Suite</td>
+                        <td class="py-3.5 px-4 font-extrabold text-emeraldBrand bg-cyanBrand/5">36+ Pro &amp; AI Tools</td>
+                        <td class="py-3.5 px-4 text-slate-300">~18 Tools</td>
+                        <td class="py-3.5 px-4 text-slate-300">~16 Tools</td>
+                        <td class="py-3.5 px-4 text-slate-300">~15 Tools</td>
+                        <td class="py-3.5 px-4 text-slate-300">~15 Tools</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3.5 px-4 font-bold text-white">AI Background Remover</td>
+                        <td class="py-3.5 px-4 font-bold text-emeraldBrand bg-cyanBrand/5">Included Free (6 Backdrops)</td>
+                        <td class="py-3.5 px-4 text-amber-300">Paid Add-On</td>
+                        <td class="py-3.5 px-4 text-amber-300">Premium Tier</td>
+                        <td class="py-3.5 px-4 text-slate-300">Mobile Only</td>
+                        <td class="py-3.5 px-4 text-amber-300">Pro Plan Only</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3.5 px-4 font-bold text-white">Browser-Based (No Install)</td>
+                        <td class="py-3.5 px-4 font-bold text-emeraldBrand bg-cyanBrand/5">Yes — Instant Web NLE</td>
+                        <td class="py-3.5 px-4 text-slate-400">Heavy Desktop App</td>
+                        <td class="py-3.5 px-4 text-slate-400">Mobile App Only</td>
+                        <td class="py-3.5 px-4 text-slate-400">Mobile App Only</td>
+                        <td class="py-3.5 px-4 text-slate-400">Mobile App Only</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3.5 px-4 font-bold text-white">Watermark-Free Trial</td>
+                        <td class="py-3.5 px-4 font-bold text-emeraldBrand bg-cyanBrand/5">5 Full 4K/1080p Exports Free</td>
+                        <td class="py-3.5 px-4 text-rose-400">Large Watermark</td>
+                        <td class="py-3.5 px-4 text-rose-400">Watermark + Ads</td>
+                        <td class="py-3.5 px-4 text-slate-300">1080p Cap</td>
+                        <td class="py-3.5 px-4 text-rose-400">Watermark + Ads</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3.5 px-4 font-bold text-white">Starting Monthly Price</td>
+                        <td class="py-3.5 px-4 font-extrabold text-cyanBrand bg-cyanBrand/5">₹99 / month (25 Videos)</td>
+                        <td class="py-3.5 px-4 text-slate-400">~₹1,699 / mo</td>
+                        <td class="py-3.5 px-4 text-slate-400">~₹499 / mo</td>
+                        <td class="py-3.5 px-4 text-slate-400">Ad-Supported</td>
+                        <td class="py-3.5 px-4 text-slate-400">~₹350 / mo</td>
+                    </tr>
+                    <tr>
+                        <td class="py-3.5 px-4 font-bold text-white">Direct Human WhatsApp Support</td>
+                        <td class="py-3.5 px-4 font-bold text-emeraldBrand bg-cyanBrand/5 rounded-b-xl">+91 9160590555 (24/7)</td>
+                        <td class="py-3.5 px-4 text-slate-400">Email Ticket</td>
+                        <td class="py-3.5 px-4 text-slate-400">Help Center</td>
+                        <td class="py-3.5 px-4 text-slate-400">Bot Only</td>
+                        <td class="py-3.5 px-4 text-slate-400">Email Only</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 6. TRANSPARENT PRICING PLANS + INSTANT WHATSAPP ACTIVATION -->
+    <section id="pricing-section" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-white/10">
+        <div class="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <span class="text-xs font-bold uppercase tracking-widest text-emeraldBrand">Transparent Monthly INR Plans</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-white">
+                Start With <span class="text-emeraldBrand">5 Videos Free</span> — Upgrade Anytime
+            </h2>
+            <div class="p-3.5 rounded-2xl bg-indigoBrand/15 border border-indigoBrand/35 text-xs sm:text-sm text-indigo-100">
+                Every single plan unlocks <strong>100% of our 36+ Pro &amp; AI features with zero watermarks</strong>. Only pay for the monthly video volume you need.
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            <!-- FREE STARTER — ₹0 -->
+            <div class="bg-surface rounded-3xl p-6 flex flex-col justify-between border border-emeraldBrand/40 space-y-6">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-emeraldBrand">Free Starter</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-emeraldBrand/15 text-emeraldBrand text-[11px] font-bold">Lifetime Trial</span>
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="font-display font-black text-4xl text-white">₹0</span>
+                            <span class="text-xs text-slate-400">/ lifetime</span>
+                        </div>
+                        <p class="text-xs text-emeraldBrand font-bold mt-1">5 Videos Free</p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 pt-3 border-t border-white/10">
+                        <li>✓ <strong class="text-white">5 Videos Free</strong> (Zero Watermark)</li>
+                        <li>✓ All 36+ AI &amp; Pro Tools Unlocked</li>
+                        <li>✓ 1080p &amp; 4K Export Included</li>
+                        <li>✓ AI Background Remover &amp; Captions</li>
+                    </ul>
+                </div>
+                <a href="#studio-workspace" class="w-full py-3 rounded-2xl bg-emeraldBrand text-canvas font-display font-extrabold text-sm text-center hover:opacity-95 transition-opacity">
+                    Try Free in Studio Now
+                </a>
+            </div>
+
+            <!-- CREATOR LITE — ₹99 / month -->
+            <div class="bg-surface rounded-3xl p-6 flex flex-col justify-between border border-cyanBrand/35 space-y-6">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-cyanBrand">Creator Lite</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-cyanBrand/15 text-cyanBrand text-[11px] font-bold">₹3.96 / video</span>
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="font-display font-black text-4xl text-white">₹99</span>
+                            <span class="text-xs text-slate-400">/ month</span>
+                        </div>
+                        <p class="text-xs text-cyanBrand font-bold mt-1">25 Videos / month</p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 pt-3 border-t border-white/10">
+                        <li>✓ <strong class="text-white">25 Videos / month</strong></li>
+                        <li>✓ All 36+ AI &amp; Pro Tools Unlocked</li>
+                        <li>✓ Priority Cloud Rendering</li>
+                        <li>✓ Direct WhatsApp Support</li>
+                    </ul>
+                </div>
+                <div class="space-y-2">
+                    <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20want%20to%20activate%20the%20Creator%20Lite%20Plan%20(%E2%82%B999%2Fmonth%20for%2025%20videos)." target="_blank" rel="noopener noreferrer" class="block w-full py-3 rounded-2xl bg-cyanBrand/20 hover:bg-cyanBrand hover:text-canvas border border-cyanBrand/45 text-cyanBrand font-display font-extrabold text-sm text-center transition-all">
+                        Activate on WhatsApp
+                    </a>
+                    <button type="button" onclick="openCallbackModal('Creator Lite — ₹99/mo (25 Videos)', 99, 25)" class="w-full py-2 rounded-xl bg-canvas hover:bg-surfaceHover text-xs font-semibold text-slate-300">
+                        Request Instant Callback
+                    </button>
+                </div>
+            </div>
+
+            <!-- PRO GROWTH — ₹299 / month (MOST POPULAR) -->
+            <div class="relative bg-surface rounded-3xl p-6 flex flex-col justify-between border-2 border-indigoBrand shadow-2xl shadow-indigo-600/25 space-y-6">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full brand-gradient text-white text-[10px] font-black uppercase tracking-wider">
+                    MOST POPULAR
+                </div>
+                <div class="space-y-4 pt-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-400">Pro Growth</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigoBrand/20 text-indigo-200 text-[11px] font-bold">₹2.99 / video</span>
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="font-display font-black text-4xl text-white">₹299</span>
+                            <span class="text-xs text-slate-400">/ month</span>
+                        </div>
+                        <p class="text-xs text-indigo-300 font-bold mt-1">100 Videos / month</p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 pt-3 border-t border-white/10">
+                        <li>✓ <strong class="text-white">100 Videos / month</strong></li>
+                        <li>✓ All 36+ AI &amp; Pro Tools Unlocked</li>
+                        <li>✓ 4K 60fps Batch Export</li>
+                        <li>✓ Custom Brand Kits &amp; LUTs</li>
+                        <li>✓ Priority WhatsApp Support</li>
+                    </ul>
+                </div>
+                <div class="space-y-2">
+                    <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20want%20to%20activate%20the%20Pro%20Growth%20Plan%20(%E2%82%B9299%2Fmonth%20for%20100%20videos)." target="_blank" rel="noopener noreferrer" class="block w-full py-3 rounded-2xl brand-gradient text-white font-display font-extrabold text-sm text-center shadow-lg shadow-indigo-600/30 transition-all">
+                        Activate on WhatsApp
+                    </a>
+                    <button type="button" onclick="openCallbackModal('Pro Growth — ₹299/mo (100 Videos)', 299, 100)" class="w-full py-2 rounded-xl bg-canvas hover:bg-surfaceHover text-xs font-semibold text-slate-300">
+                        Request Instant Callback
+                    </button>
+                </div>
+            </div>
+
+            <!-- UNLIMITED STUDIO — ₹599 / month -->
+            <div class="bg-surface rounded-3xl p-6 flex flex-col justify-between border border-amber-400/40 space-y-6">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-amber-400">Unlimited Studio</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 text-[11px] font-bold">Agencies</span>
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="font-display font-black text-4xl text-white">₹599</span>
+                            <span class="text-xs text-slate-400">/ month</span>
+                        </div>
+                        <p class="text-xs text-amber-300 font-bold mt-1">Unlimited Videos / month</p>
+                    </div>
+                    <ul class="space-y-2.5 text-xs text-slate-300 pt-3 border-t border-white/10">
+                        <li>✓ <strong class="text-white">Unlimited Videos / month</strong></li>
+                        <li>✓ All 36+ AI &amp; Pro Tools Unlocked</li>
+                        <li>✓ Fastest GPU Render Queue</li>
+                        <li>✓ Commercial Agency License</li>
+                        <li>✓ Dedicated Manager on +91 9160590555</li>
+                    </ul>
+                </div>
+                <div class="space-y-2">
+                    <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20want%20to%20activate%20the%20Unlimited%20Studio%20Plan%20(%E2%82%B9599%2Fmonth%20for%20Unlimited%20videos)." target="_blank" rel="noopener noreferrer" class="block w-full py-3 rounded-2xl bg-amber-400/20 hover:bg-amber-400 hover:text-canvas border border-amber-400/45 text-amber-300 font-display font-extrabold text-sm text-center transition-all">
+                        Activate on WhatsApp
+                    </a>
+                    <button type="button" onclick="openCallbackModal('Unlimited Studio — ₹599/mo (Unlimited)', 599, 999999)" class="w-full py-2 rounded-xl bg-canvas hover:bg-surfaceHover text-xs font-semibold text-slate-300">
+                        Request Instant Callback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. CREATOR TESTIMONIALS & INTERACTIVE FAQ ACCORDION -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-white/10 space-y-20">
+        <!-- Creator Reviews -->
+        <div>
+            <div class="text-center max-w-2xl mx-auto mb-10 space-y-2">
+                <span class="text-xs font-bold uppercase tracking-widest text-cyanBrand">Trusted by Daily Creators</span>
+                <h2 class="font-display font-extrabold text-3xl text-white">What Creators Say About CutFlow Studio</h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-surface card-border rounded-3xl p-6 space-y-3">
+                    <div class="text-amber-400 text-sm">★★★★★</div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">"I tested my 5 free videos first—the AI Background Remover and Hormozi captions worked right in Chrome with zero watermark. Upgraded to ₹299/mo on WhatsApp in 2 minutes!"</p>
+                    <div class="pt-2 border-t border-white/10">
+                        <div class="font-bold text-sm text-white">Rohan Deshmukh</div>
+                        <div class="text-xs text-slate-400">Tech YouTuber • 420K Subscribers</div>
+                    </div>
+                </div>
+                <div class="bg-surface card-border rounded-3xl p-6 space-y-3">
+                    <div class="text-amber-400 text-sm">★★★★★</div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">"Having 36+ tools like Bezier Keyframes, 10-Band EQ, and 3D LUTs in a lightweight browser tab replaced both Filmora and InShot for my daily Instagram Reels workflow."</p>
+                    <div class="pt-2 border-t border-white/10">
+                        <div class="font-bold text-sm text-white">Ananya Nair</div>
+                        <div class="text-xs text-slate-400">Finance &amp; Lifestyle Creator • 185K Followers</div>
+                    </div>
+                </div>
+                <div class="bg-surface card-border rounded-3xl p-6 space-y-3">
+                    <div class="text-amber-400 text-sm">★★★★★</div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">"Our agency runs on the ₹599 Unlimited Studio plan. The priority GPU render queue and direct WhatsApp manager on +91 9160590555 make client turnarounds effortless."</p>
+                    <div class="pt-2 border-t border-white/10">
+                        <div class="font-bold text-sm text-white">Vikramaditya Rao</div>
+                        <div class="text-xs text-slate-400">Founder, PulseMedia Shorts Agency</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5-Question Expandable FAQ Accordion -->
+        <div id="faq-section" class="max-w-3xl mx-auto">
+            <div class="text-center mb-8 space-y-2">
+                <span class="text-xs font-bold uppercase tracking-widest text-indigoBrand">Got Questions?</span>
+                <h2 class="font-display font-extrabold text-3xl text-white">Frequently Asked Questions</h2>
+            </div>
+
+            <div class="space-y-3" id="faq-accordion">
+                <div class="bg-surface card-border rounded-2xl overflow-hidden">
+                    <button type="button" onclick="toggleFaqItem(0)" class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-display font-bold text-sm sm:text-base text-white">
+                        <span>1. Are all 36+ Pro &amp; AI features really unlocked during the 5-video free trial?</span>
+                        <span class="faq-icon text-cyanBrand font-mono text-lg">+</span>
+                    </button>
+                    <div class="faq-body hidden px-4 sm:px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Yes! Unlike other editors that lock AI Background Remover, 4K export, or LUTs behind paywalls, CutFlow Studio gives you 100% full access to all 36+ features during your 5 free video exports with zero watermarks.
+                    </div>
+                </div>
+
+                <div class="bg-surface card-border rounded-2xl overflow-hidden">
+                    <button type="button" onclick="toggleFaqItem(1)" class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-display font-bold text-sm sm:text-base text-white">
+                        <span>2. What happens after I finish my 5 free videos?</span>
+                        <span class="faq-icon text-cyanBrand font-mono text-lg">+</span>
+                    </button>
+                    <div class="faq-body hidden px-4 sm:px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        You can pick any monthly plan based on your output: ₹99/month for 25 videos, ₹299/month for 100 videos, or ₹599/month for Unlimited videos. All 36+ features remain unlocked on every tier.
+                    </div>
+                </div>
+
+                <div class="bg-surface card-border rounded-2xl overflow-hidden">
+                    <button type="button" onclick="toggleFaqItem(2)" class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-display font-bold text-sm sm:text-base text-white">
+                        <span>3. How do I pay via UPI or activate my plan on WhatsApp (+91 9160590555)?</span>
+                        <span class="faq-icon text-cyanBrand font-mono text-lg">+</span>
+                    </button>
+                    <div class="faq-body hidden px-4 sm:px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Click "Activate on WhatsApp" on any plan card or message +91 9160590555 directly. Our support team shares an instant UPI QR/link and activates your monthly video quota within minutes.
+                    </div>
+                </div>
+
+                <div class="bg-surface card-border rounded-2xl overflow-hidden">
+                    <button type="button" onclick="toggleFaqItem(3)" class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-display font-bold text-sm sm:text-base text-white">
+                        <span>4. Do I need to download or install any heavy software?</span>
+                        <span class="faq-icon text-cyanBrand font-mono text-lg">+</span>
+                    </button>
+                    <div class="faq-body hidden px-4 sm:px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        No installation is required. CutFlow Studio runs natively inside Chrome, Edge, Safari, and Brave on Windows, Mac, Chromebook, and tablets.
+                    </div>
+                </div>
+
+                <div class="bg-surface card-border rounded-2xl overflow-hidden">
+                    <button type="button" onclick="toggleFaqItem(4)" class="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-display font-bold text-sm sm:text-base text-white">
+                        <span>5. Can I use exported videos for monetized YouTube channels and client ads?</span>
+                        <span class="faq-icon text-cyanBrand font-mono text-lg">+</span>
+                    </button>
+                    <div class="faq-body hidden px-4 sm:px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Yes! All exports are 100% watermark-free and include royalty-free SFX and commercial rights for YouTube monetization, Instagram Reels, Shorts, and client deliverables.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. PROFESSIONAL MULTI-COLUMN FOOTER -->
+    <footer class="bg-surface border-t border-white/10 pt-14 pb-10 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-white/10">
+            <div class="space-y-3">
+                <div class="font-display font-extrabold text-xl text-white">CutFlow <span class="text-cyanBrand">Studio</span></div>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    The all-in-one browser AI NLE with 36+ Pro &amp; AI tools—double the features of Filmora, Vita, KineMaster &amp; InShot.
+                </p>
+            </div>
+            <div class="space-y-2 text-xs">
+                <div class="font-display font-bold text-sm text-white mb-2">Studio &amp; Tools</div>
+                <div><a href="#studio-workspace" class="text-slate-400 hover:text-white">Interactive Web NLE</a></div>
+                <div><a href="#features-directory" class="text-slate-400 hover:text-white">AI Background Remover</a></div>
+                <div><a href="#features-directory" class="text-slate-400 hover:text-white">36+ Pro &amp; AI Tools</a></div>
+                <div><a href="#comparison-matrix" class="text-slate-400 hover:text-white">Editor Comparison</a></div>
+            </div>
+            <div class="space-y-2 text-xs">
+                <div class="font-display font-bold text-sm text-white mb-2">Monthly Plans</div>
+                <div><a href="#pricing-section" class="text-slate-400 hover:text-white">Free Starter — ₹0 (5 Videos)</a></div>
+                <div><a href="#pricing-section" class="text-slate-400 hover:text-white">Creator Lite — ₹99/mo (25 Videos)</a></div>
+                <div><a href="#pricing-section" class="text-slate-400 hover:text-white">Pro Growth — ₹299/mo (100 Videos)</a></div>
+                <div><a href="#pricing-section" class="text-slate-400 hover:text-white">Unlimited Studio — ₹599/mo</a></div>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div class="font-display font-bold text-sm text-white">Direct Support &amp; Activation</div>
+                <p class="text-slate-400">Need instant UPI activation or editing help? Reach our team 24/7:</p>
+                <div class="flex flex-col gap-2">
+                    <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20need%20help%20with%20my%20account." target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl bg-emeraldBrand text-canvas font-extrabold text-center">
+                        WhatsApp: +91 9160590555
+                    </a>
+                    <a href="tel:+919160590555" class="px-4 py-2 rounded-xl bg-canvas border border-white/15 text-white font-bold text-center">
+                        Call: +91 9160590555
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <span>© 2026 CutFlow Studio. All rights reserved.</span>
+            <span>Direct Support Helpline: +91 9160590555</span>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: REALISTIC MULTI-STAGE EXPORT & QUOTA RENDER MODAL -->
+    <div id="export-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <div class="bg-surface rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-indigoBrand/45 shadow-2xl space-y-5 relative">
+            <button type="button" onclick="closeExportModal()" class="absolute top-5 right-5 px-2.5 py-1 rounded-lg bg-white/10 text-slate-300 hover:text-white text-xs font-bold">✕</button>
+
+            <div id="export-available-view" class="space-y-4">
+                <span class="px-3 py-1 rounded-full bg-emeraldBrand/15 border border-emeraldBrand/40 text-emeraldBrand text-xs font-bold">
+                    Zero Watermark • All 36+ Tools Applied
+                </span>
+                <h3 class="font-display font-extrabold text-2xl text-white">Export Master Video</h3>
+                <p id="export-modal-quota-copy" class="text-xs sm:text-sm text-slate-300">
+                    You have <strong class="text-emeraldBrand">5/5 Free Videos</strong> remaining. Exporting will use 1 video credit.
+                </p>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="setExportQuality('4K 60fps')" data-eq="4K 60fps" class="eq-btn py-2.5 rounded-xl bg-indigoBrand text-white font-bold text-xs">4K 60fps</button>
+                    <button type="button" onclick="setExportQuality('1080p HD')" data-eq="1080p HD" class="eq-btn py-2.5 rounded-xl bg-canvas text-slate-300 font-bold text-xs">1080p HD</button>
+                    <button type="button" onclick="setExportQuality('720p Web')" data-eq="720p Web" class="eq-btn py-2.5 rounded-xl bg-canvas text-slate-300 font-bold text-xs">720p Web</button>
+                </div>
+
+                <!-- Multi-Stage Rendering Progress -->
+                <div id="render-progress-panel" class="hidden space-y-2.5 p-4 rounded-2xl bg-canvas border border-white/10">
+                    <div class="w-full h-3 rounded-full bg-surface overflow-hidden p-0.5">
+                        <div id="render-progress-bar" class="h-full w-0 brand-gradient rounded-full transition-all duration-150"></div>
+                    </div>
+                    <div class="flex justify-between font-mono text-xs text-cyanBrand">
+                        <span id="render-stage-text">Stage 1/3: AI Upscaling &amp; Cutout...</span>
+                        <span id="render-pct-text">0%</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-1">
+                    <button type="button" id="btn-begin-render" onclick="startMasterRender()" class="flex-1 py-3 rounded-2xl brand-gradient text-white font-display font-extrabold text-sm shadow-lg shadow-indigo-600/30">
+                        Render Watermark-Free MP4
+                    </button>
+                    <button type="button" id="btn-download-rendered" onclick="triggerSimulatedDownload()" class="hidden flex-1 py-3 rounded-2xl bg-emeraldBrand text-canvas font-display font-extrabold text-sm">
+                        Download Master Video
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quota Exhausted Upgrade Prompt -->
+            <div id="export-exhausted-view" class="hidden space-y-4">
+                <span class="px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold">0 Exports Remaining</span>
+                <h3 class="font-display font-extrabold text-2xl text-white">Unlock More Monthly Exports</h3>
+                <p class="text-xs sm:text-sm text-slate-300">
+                    You've used all 5 free exports! Keep 100% of our 36+ Pro &amp; AI features unlocked by activating a monthly plan on WhatsApp (<strong class="text-emeraldBrand">+91 9160590555</strong>):
+                </p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="activateDemoQuota('Creator Lite', 99, 25)" class="p-3 rounded-2xl bg-canvas border border-cyanBrand/40 text-left">
+                        <div class="text-[10px] font-bold text-cyanBrand">Creator Lite</div>
+                        <div class="font-display font-black text-xl text-white">₹99</div>
+                        <div class="text-[10px] text-slate-400">25 Videos/mo</div>
+                    </button>
+                    <button type="button" onclick="activateDemoQuota('Pro Growth', 299, 100)" class="p-3 rounded-2xl bg-indigoBrand/20 border-2 border-indigoBrand text-left">
+                        <div class="text-[10px] font-bold text-indigo-300">Pro Growth</div>
+                        <div class="font-display font-black text-xl text-white">₹299</div>
+                        <div class="text-[10px] text-slate-300">100 Videos/mo</div>
+                    </button>
+                    <button type="button" onclick="activateDemoQuota('Unlimited Studio', 599, 999999)" class="p-3 rounded-2xl bg-canvas border border-amber-400/40 text-left">
+                        <div class="text-[10px] font-bold text-amber-400">Unlimited</div>
+                        <div class="font-display font-black text-xl text-white">₹599</div>
+                        <div class="text-[10px] text-slate-400">Unlimited/mo</div>
+                    </button>
+                </div>
+                <a href="https://wa.me/919160590555?text=Hi%20CutFlow%20Studio!%20I%20finished%20my%205%20free%20videos%20and%20want%20to%20upgrade%20my%20plan." target="_blank" rel="noopener noreferrer" class="block w-full py-3 rounded-2xl bg-emeraldBrand text-canvas font-display font-extrabold text-sm text-center">
+                    Instant WhatsApp Upgrade (+91 9160590555)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PLAN ACTIVATION / CALLBACK & QUOTA SWITCHER MODAL -->
+    <div id="callback-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <div class="bg-surface rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyanBrand/40 shadow-2xl space-y-5 relative">
+            <button type="button" onclick="closeCallbackModal()" class="absolute top-5 right-5 px-2.5 py-1 rounded-lg bg-white/10 text-slate-300 hover:text-white text-xs font-bold">✕</button>
+
+            <div class="space-y-1.5">
+                <span class="text-xs font-bold uppercase tracking-wider text-cyanBrand">Instant Plan Activation</span>
+                <h3 id="callback-plan-heading" class="font-display font-extrabold text-2xl text-white">Pro Growth — ₹299/mo</h3>
+                <p class="text-xs text-slate-300">Activate immediately via WhatsApp or request a callback from <strong class="text-emeraldBrand">+91 9160590555</strong>.</p>
+            </div>
+
+            <form id="callback-request-form" class="space-y-3">
+                <input type="text" id="cb-user-name" required placeholder="Your Full Name" class="w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-white/15 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanBrand">
+                <input type="tel" id="cb-user-phone" required placeholder="Your WhatsApp / Mobile Number" class="w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-white/15 text-xs sm:text-sm text-white focus:outline-none focus:border-cyanBrand">
+                <button type="submit" class="w-full py-3 rounded-2xl brand-gradient text-white font-display font-extrabold text-sm shadow-lg shadow-indigo-600/30">
+                    Submit &amp; Preview Plan in Studio
+                </button>
+            </form>
+
+            <div id="callback-confirmation-box" class="hidden p-3.5 rounded-2xl bg-emeraldBrand/15 border border-emeraldBrand/40 text-xs text-emerald-200"></div>
+
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                <a id="callback-whatsapp-link" href="https://wa.me/919160590555" target="_blank" rel="noopener noreferrer" class="py-2.5 rounded-xl bg-emeraldBrand text-canvas font-extrabold text-xs text-center">
+                    Open WhatsApp
+                </a>
+                <a href="tel:+919160590555" class="py-2.5 rounded-xl bg-canvas border border-white/15 text-white font-bold text-xs text-center">
+                    Call +91 9160590555
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. 36+ PRO & AI FEATURES DIRECTORY (DOUBLE THE TOOLS)
+        // =========================================================================
+        const cutflowTools36 = [
+            // AI Suite (10)
+            { cat: 'ai', group: 'AI Suite', title: 'AI Background Remover', desc: 'Instant subject isolation without green screens + 6 virtual studio backdrops.' },
+            { cat: 'ai', group: 'AI Suite', title: 'Chroma Key', desc: 'Precision green & blue screen keying with adjustable spill & tolerance slider.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Auto-Captions', desc: 'Hormozi Bold Pop, Neon Glow, and Clean Cinema animated subtitles in 1 click.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Voice Isolation', desc: 'Strip background traffic, fan hum, and echo for studio-grade vocal clarity.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Object Tracker', desc: 'Pin text, callouts, or blur masks onto fast-moving subjects automatically.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Eye-Contact Fix', desc: 'Subtly redirect off-camera glances toward the lens for natural talking-head delivery.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Scene Detection', desc: 'Automatically split long raw recordings at every camera cut or scene change.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Script-to-Video', desc: 'Convert topic prompts into structured hook scenes, B-roll cues, and captions.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Upscaler 4K', desc: 'Sharpen 720p/1080p footage to crisp 4K 60fps detail using neural enhancement.' },
+            { cat: 'ai', group: 'AI Suite', title: 'AI Beat Sync', desc: 'Detect transient bass drops and align cuts and zoom pulses to music beats.' },
+            // Timeline & Keyframes (8)
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Multi-Track Timeline', desc: 'Layer V2 overlays, V1 main video, A1 voiceover, and A2 music/SFX tracks.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Bezier Keyframing', desc: 'Smooth ease-in/ease-out motion curves for scale, pan, rotation, and opacity.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Speed Ramping', desc: 'Fluid 0.5x slow-mo to 2.0x timelapse presets with optical frame blending.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Proxy Editing', desc: 'Ultra-responsive timeline scrubbing even on large 4K 60fps source files.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Compound Clips', desc: 'Group multi-layer intros and lower-thirds into clean reusable nested sequences.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Adjustment Layers', desc: 'Apply LUT grades and VFX across dozens of timeline clips simultaneously.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Picture-in-Picture', desc: 'Overlay reaction cams, screen recordings, and split-screen layouts effortlessly.' },
+            { cat: 'timeline', group: 'Timeline & Keyframes', title: 'Masking & Blend Modes', desc: 'Linear, radial, and shape masks with Screen, Multiply, and Overlay blending.' },
+            // Color & VFX (8)
+            { cat: 'color', group: 'Color & VFX', title: '3D LUT Loader', desc: 'Teal & Orange, Kodak Portra Warm, Moody Noir, Fuji Velvia, and Reels Pop LUTs.' },
+            { cat: 'color', group: 'Color & VFX', title: 'Color Wheels', desc: 'Independent Lift, Gamma, and Gain color balance control for shadows & highlights.' },
+            { cat: 'color', group: 'Color & VFX', title: 'HSL Secondary', desc: 'Isolate and shift specific hues like sky blues or skin tones without affecting others.' },
+            { cat: 'color', group: 'Color & VFX', title: 'Skin Retouch', desc: 'Natural studio complexion smoothing and lighting balance for talking-head videos.' },
+            { cat: 'color', group: 'Color & VFX', title: '35mm Film Grain', desc: 'Authentic organic analog grain texture overlay for cinematic storytelling.' },
+            { cat: 'color', group: 'Color & VFX', title: 'Glitch & RGB VFX', desc: 'High-energy chromatic aberration split and digital glitch transition effects.' },
+            { cat: 'color', group: 'Color & VFX', title: 'Motion Blur', desc: 'Directional shutter-angle blur for whip-pans and fast keyframe transitions.' },
+            { cat: 'color', group: 'Color & VFX', title: 'Stabilization', desc: 'Eliminate handheld camera jitter and walking shake in a single toggle.' },
+            // Audio Studio (5)
+            { cat: 'audio', group: 'Audio Studio', title: '10-Band EQ', desc: 'Sculpt sub-bass warmth, vocal presence, and crisp treble air with precision EQ.' },
+            { cat: 'audio', group: 'Audio Studio', title: 'Audio Ducking', desc: 'Automatically dip background music volume whenever voiceover dialogue plays.' },
+            { cat: 'audio', group: 'Audio Studio', title: 'Stem Splitter', desc: 'Separate vocals from background instrumentals on any imported audio track.' },
+            { cat: 'audio', group: 'Audio Studio', title: 'Voice Changer', desc: 'Switch between Studio Broadcast, Deep Cinema, Robot, and Ambient FX presets.' },
+            { cat: 'audio', group: 'Audio Studio', title: 'Royalty-Free SFX', desc: 'Instant synthesized Whoosh, Bass Drop, Pop, and Shutter cues built right in.' },
+            // Creator & Export (5)
+            { cat: 'export', group: 'Creator & Export', title: '4K 60fps Export', desc: 'High-bitrate MP4 master rendering up to 4K 60fps directly from your browser.' },
+            { cat: 'export', group: 'Creator & Export', title: 'Zero Watermark', desc: '100% clean exports across your 5-video free trial and every paid tier.' },
+            { cat: 'export', group: 'Creator & Export', title: 'Direct Reels/Shorts Crop', desc: '1-click aspect ratio switching across 16:9, 9:16, 1:1, and 4:5 social formats.' },
+            { cat: 'export', group: 'Creator & Export', title: 'Batch Export', desc: 'Queue multiple aspect ratios and resolutions for simultaneous cloud rendering.' },
+            { cat: 'export', group: 'Creator & Export', title: 'Cloud Project Sync', desc: 'Pick up your timeline edits seamlessly across desktop and laptop browsers.' }
+        ];
+
+        let dirCategory = 'all';
+        let dirSearchQuery = '';
+
+        function renderToolsDirectory() {
+            const grid = document.getElementById('tools-directory-grid');
+            const matches = cutflowTools36.filter(tool => {
+                const catOk = dirCategory === 'all' || tool.cat === dirCategory;
+                const q = dirSearchQuery.toLowerCase().trim();
+                const textOk = !q || tool.title.toLowerCase().includes(q) || tool.desc.toLowerCase().includes(q) || tool.group.toLowerCase().includes(q);
+                return catOk && textOk;
+            });
+
+            if (matches.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 text-sm">No tools match "${dirSearchQuery}". Try clearing your search filter.</div>`;
+                return;
+            }
+
+            grid.innerHTML = matches.map((tool, idx) => `
+                <div class="bg-surface hover:bg-surfaceHover card-border hover:border-cyanBrand/45 rounded-2xl p-4 sm:p-5 transition-all flex flex-col justify-between space-y-3">
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-indigoBrand/15 border border-indigoBrand/30 flex items-center justify-center text-cyanBrand">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full bg-emeraldBrand/15 text-emeraldBrand text-[10px] font-bold">Included Free</span>
+                        </div>
+                        <h3 class="font-display font-bold text-sm sm:text-base text-white">${tool.title}</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">${tool.desc}</p>
+                    </div>
+                    <div class="pt-1 flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500 font-mono">${tool.group}</span>
+                        <a href="#studio-workspace" class="font-bold text-cyanBrand hover:underline">Open Tool →</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterToolsDirectory(cat) {
+            dirCategory = cat;
+            document.querySelectorAll('.dir-pill').forEach(btn => {
+                if (btn.dataset.fcat === cat) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-surface', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-surface', 'text-slate-300');
+                }
+            });
+            renderToolsDirectory();
+        }
+
+        document.getElementById('directory-search-input').addEventListener('input', (e) => {
+            dirSearchQuery = e.target.value;
+            renderToolsDirectory();
+        });
+
+        renderToolsDirectory();
+
+        // =========================================================================
+        // 2. QUOTA SYSTEM (5 FREE VIDEOS -> ₹99 / ₹299 / ₹599)
+        // =========================================================================
+        const KEY_REM = 'cutflow_quota_rem_v1';
+        const KEY_TOT = 'cutflow_quota_tot_v1';
+        const KEY_PLAN = 'cutflow_quota_plan_v1';
+
+        function readQuota() {
+            let rem = localStorage.getItem(KEY_REM);
+            let tot = localStorage.getItem(KEY_TOT);
+            let plan = localStorage.getItem(KEY_PLAN);
+            if (rem === null) {
+                rem = '5';
+                tot = '5';
+                plan = 'Free Tier';
+                localStorage.setItem(KEY_REM, rem);
+                localStorage.setItem(KEY_TOT, tot);
+                localStorage.setItem(KEY_PLAN, plan);
+            }
+            return { rem: parseInt(rem, 10), tot: parseInt(tot, 10), plan };
+        }
+
+        function updateQuotaDisplays() {
+            const { rem, tot, plan } = readQuota();
+            const navText = tot >= 99999 ? 'Unlimited Plan Active' : `${rem} Free Exports Left`;
+            const studioText = tot >= 99999 ? `${plan}: Unlimited Videos` : `${plan}: ${rem}/${tot} Videos Remaining`;
+            document.getElementById('nav-quota-badge').textContent = navText;
+            document.getElementById('studio-quota-pill').textContent = studioText;
+        }
+
+        updateQuotaDisplays();
+
+        function activateDemoQuota(planName, priceInr, limit) {
+            localStorage.setItem(KEY_REM, String(limit));
+            localStorage.setItem(KEY_TOT, String(limit));
+            localStorage.setItem(KEY_PLAN, `${planName} (₹${priceInr}/mo)`);
+            updateQuotaDisplays();
+            closeExportModal();
+            closeCallbackModal();
+        }
+
+        // =========================================================================
+        // 3. INTERACTIVE NLE VIDEO EDITOR STUDIO ENGINE
+        // =========================================================================
+        const demoClips = [
+            { name: 'Creator_Viral_Reel_4K.mp4', label: 'Creator Talking Head', accent: '#6366F1', secondary: '#06B6D4' },
+            { name: 'Tech_Product_Showcase.mp4', label: 'Tech Product Showcase', accent: '#06B6D4', secondary: '#10B981' },
+            { name: 'Himalaya_Drone_60fps.mp4', label: 'Travel Cinematic Drone', accent: '#F59E0B', secondary: '#6366F1' },
+            { name: 'Fitness_HIIT_Reel.mp4', label: 'Fitness Reel', accent: '#EC4899', secondary: '#06B6D4' }
+        ];
+
+        const viewportBox = document.getElementById('viewport-aspect-box');
+        const demoCanvas = document.getElementById('studio-demo-canvas');
+        const demoCtx = demoCanvas.getContext('2d');
+        const html5Video = document.getElementById('studio-html5-video');
+
+        let activeClipIdx = 0;
+        let isUploadedMode = false;
+        let isPlaying = true;
+        let playheadSec = 4.12;
+        let playbackSpeed = 1.0;
+        let activeBackdrop = 'transparent';
+        let activeLut = 'natural';
+        let activeMotion = 'none';
+        let splitCount = 0;
+        const vfxState = { glitch: false, grain: false, letterbox: false, vignette: false, flare: false };
+
+        // Left Dock Tab Switcher
+        function switchDockTab(tabKey) {
+            document.querySelectorAll('.dock-tab').forEach(btn => {
+                if (btn.dataset.dock === tabKey) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-surfaceHover', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-surfaceHover', 'text-slate-300');
+                }
+            });
+            document.querySelectorAll('.dock-panel').forEach(panel => {
+                panel.classList.toggle('hidden', panel.id !== `dock-panel-${tabKey}`);
+            });
+        }
+
+        // Aspect Ratio Switcher
+        function setStudioAspect(ar) {
+            viewportBox.classList.remove('aspect-video', 'aspect-[9/16]', 'aspect-square', 'aspect-[4/5]', 'max-w-xl', 'max-w-[210px]', 'max-w-[300px]', 'max-w-[260px]');
+            if (ar === '16:9') viewportBox.classList.add('aspect-video', 'max-w-xl');
+            else if (ar === '9:16') viewportBox.classList.add('aspect-[9/16]', 'max-w-[210px]');
+            else if (ar === '1:1') viewportBox.classList.add('aspect-square', 'max-w-[300px]');
+            else if (ar === '4:5') viewportBox.classList.add('aspect-[4/5]', 'max-w-[260px]');
+
+            document.querySelectorAll('.ar-pill').forEach(btn => {
+                if (btn.dataset.ar === ar) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('text-slate-300');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('text-slate-300');
+                }
+            });
+        }
+
+        // Demo Clip Switcher & Local Upload
+        function selectDemoClip(idx) {
+            activeClipIdx = idx;
+            isUploadedMode = false;
+            html5Video.pause();
+            html5Video.classList.add('hidden');
+            demoCanvas.classList.remove('hidden');
+            document.getElementById('studio-project-title').value = demoClips[idx].name;
+
+            document.querySelectorAll('.clip-tab').forEach(btn => {
+                if (parseInt(btn.dataset.clip, 10) === idx) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-surface', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-surface', 'text-slate-300');
+                }
+            });
+        }
+
+        document.getElementById('studio-file-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            isUploadedMode = true;
+            document.getElementById('studio-project-title').value = file.name;
+            demoCanvas.classList.add('hidden');
+            html5Video.src = URL.createObjectURL(file);
+            html5Video.classList.remove('hidden');
+            html5Video.playbackRate = playbackSpeed;
+            html5Video.play().catch(() => {});
+            isPlaying = true;
+            document.getElementById('transport-play-btn').textContent = 'Pause';
+        });
+
+        // AI Background Remover & Virtual Backdrops
+        const toggleAiBg = document.getElementById('toggle-ai-bg');
+        const chromaSlider = document.getElementById('slider-chroma-key');
+        toggleAiBg.addEventListener('change', applyAllVisualEffects);
+        chromaSlider.addEventListener('input', (e) => {
+            document.getElementById('chroma-val-label').textContent = `${e.target.value}%`;
+            if (parseInt(e.target.value, 10) > 0) toggleAiBg.checked = true;
+            applyAllVisualEffects();
+        });
+
+        function selectVirtualBackdrop(vb) {
+            activeBackdrop = vb;
+            toggleAiBg.checked = true;
+            document.querySelectorAll('.vb-btn').forEach(btn => {
+                btn.classList.toggle('border-2', btn.dataset.vb === vb);
+                btn.classList.toggle('border-cyanBrand', btn.dataset.vb === vb);
+            });
+            applyAllVisualEffects();
+        }
+
+        // Auto-Captions & Lower-Third Overlays
+        document.getElementById('toggle-ai-captions').addEventListener('change', (e) => {
+            document.getElementById('overlay-captions-wrap').classList.toggle('hidden', !e.target.checked);
+        });
+        document.getElementById('input-caption-text').addEventListener('input', (e) => {
+            document.getElementById('overlay-caption-pill').textContent = e.target.value || 'CUTFLOW STUDIO AI';
+        });
+
+        function setCaptionStyle(styleKey) {
+            document.querySelectorAll('.cs-btn').forEach(btn => {
+                btn.classList.toggle('ring-2', btn.dataset.cs === styleKey);
+                btn.classList.toggle('ring-white', btn.dataset.cs === styleKey);
+            });
+            const pill = document.getElementById('overlay-caption-pill');
+            pill.className = 'inline-block px-3.5 py-1.5 rounded-xl font-display font-black text-xs sm:text-sm uppercase tracking-wide shadow-xl';
+            if (styleKey === 'hormozi') {
+                pill.classList.add('bg-black/85', 'text-yellow-400', 'border', 'border-yellow-400/40');
+            } else if (styleKey === 'neon') {
+                pill.classList.add('bg-indigo-950/90', 'text-cyanBrand', 'border', 'border-cyanBrand');
+            } else {
+                pill.classList.add('bg-white/95', 'text-canvas');
+            }
+        }
+
+        document.getElementById('toggle-voice-isolator').addEventListener('change', (e) => {
+            document.getElementById('badge-voice-iso').classList.toggle('hidden', !e.target.checked);
+        });
+
+        document.getElementById('toggle-lower-third').addEventListener('change', (e) => {
+            document.getElementById('overlay-lower-third').classList.toggle('hidden', !e.target.checked);
+        });
+        document.getElementById('input-lower-third').addEventListener('input', (e) => {
+            document.getElementById('overlay-lower-third').textContent = e.target.value || 'CUTFLOW CREATOR';
+        });
+
+        function setLowerThirdColor(hex) {
+            document.getElementById('overlay-lower-third').style.borderColor = hex;
+        }
+
+        function setLowerThirdPos(pos) {
+            const el = document.getElementById('overlay-lower-third');
+            el.classList.remove('left-3', 'right-3');
+            el.classList.add(pos === 'top-left' ? 'left-3' : 'right-3');
+            document.querySelectorAll('.ltp-btn').forEach(btn => {
+                if (btn.dataset.ltp === pos) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-surface', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-surface', 'text-slate-300');
+                }
+            });
+        }
+
+        // Color Grading & 3D LUTs
+        function applyColorLut(lut) {
+            activeLut = lut;
+            document.querySelectorAll('.lut-btn').forEach(btn => {
+                if (btn.dataset.lut === lut) {
+                    btn.classList.add('bg-cyanBrand', 'text-canvas', 'font-extrabold');
+                    btn.classList.remove('bg-canvas', 'text-slate-200');
+                } else {
+                    btn.classList.remove('bg-cyanBrand', 'text-canvas', 'font-extrabold');
+                    btn.classList.add('bg-canvas', 'text-slate-200');
+                }
+            });
+            applyAllVisualEffects();
+        }
+
+        ['exp', 'con', 'sat', 'tmp'].forEach(key => {
+            document.getElementById(`grade-${key}`).addEventListener('input', (e) => {
+                const suffix = key === 'tmp' ? 'deg' : '%';
+                document.getElementById(`grade-${key}-val`).textContent = `${e.target.value}${suffix}`;
+                applyAllVisualEffects();
+            });
+        });
+
+        // VFX Overlays
+        function toggleStudioVfx(key) {
+            vfxState[key] = !vfxState[key];
+            const stateEl = document.getElementById(`vfx-state-${key}`);
+            stateEl.textContent = vfxState[key] ? 'ON' : 'OFF';
+            stateEl.classList.toggle('text-cyanBrand', vfxState[key]);
+            document.getElementById(`vfx-toggle-${key}`).classList.toggle('border-cyanBrand', vfxState[key]);
+
+            if (key === 'grain') document.getElementById('overlay-film-grain').classList.toggle('hidden', !vfxState.grain);
+            if (key === 'letterbox') document.getElementById('overlay-cinema-bars').classList.toggle('hidden', !vfxState.letterbox);
+            if (key === 'vignette') document.getElementById('overlay-vignette').classList.toggle('hidden', !vfxState.vignette);
+            if (key === 'flare') document.getElementById('overlay-lens-flare').classList.toggle('hidden', !vfxState.flare);
+            applyAllVisualEffects();
+        }
+
+        // Speed Ramp & Camera Motion
+        function setPlaybackSpeed(spd) {
+            playbackSpeed = spd;
+            html5Video.playbackRate = spd;
+            document.getElementById('timeline-speed-tag').textContent = `${spd.toFixed(1)}x • ${splitCount} SPLITS`;
+            document.querySelectorAll('.spd-btn').forEach(btn => {
+                if (parseFloat(btn.dataset.spd) === spd) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-canvas', 'text-slate-200');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-canvas', 'text-slate-200');
+                }
+            });
+        }
+
+        function setCameraMotion(mot) {
+            activeMotion = mot;
+            document.querySelectorAll('.mot-btn').forEach(btn => {
+                if (btn.dataset.mot === mot) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-canvas', 'text-slate-200');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-canvas', 'text-slate-200');
+                }
+            });
+            applyAllVisualEffects();
+        }
+
+        function applyAllVisualEffects() {
+            const bgOn = toggleAiBg.checked;
+            document.getElementById('badge-bg-removed').classList.toggle('hidden', !bgOn);
+
+            viewportBox.classList.remove('backdrop-transparent', 'backdrop-cyberpunk', 'backdrop-office', 'backdrop-bokeh', 'backdrop-sunset', 'backdrop-greenscreen');
+            if (bgOn) {
+                viewportBox.classList.add(`backdrop-${activeBackdrop}`);
+            }
+
+            const exp = document.getElementById('grade-exp').value;
+            const con = document.getElementById('grade-con').value;
+            const sat = document.getElementById('grade-sat').value;
+            const tmp = document.getElementById('grade-tmp').value;
+
+            let lutFilter = '';
+            if (activeLut === 'teal') lutFilter = 'hue-rotate(-14deg) saturate(1.35)';
+            else if (activeLut === 'kodak') lutFilter = 'sepia(0.28) saturate(1.25) contrast(1.06)';
+            else if (activeLut === 'noir') lutFilter = 'grayscale(1) contrast(1.3)';
+            else if (activeLut === 'reels') lutFilter = 'saturate(1.55) contrast(1.12)';
+            else if (activeLut === 'fuji') lutFilter = 'saturate(1.4) hue-rotate(8deg)';
+
+            const filterString = `brightness(${exp}%) contrast(${con}%) saturate(${sat}%) hue-rotate(${tmp}deg) ${lutFilter}`.trim();
+            html5Video.style.filter = filterString;
+            demoCanvas.style.filter = filterString;
+
+            [html5Video, demoCanvas].forEach(el => {
+                el.classList.remove('motion-zoom', 'motion-pulse', 'motion-shake', 'vfx-glitch-on');
+                if (activeMotion === 'zoom') el.classList.add('motion-zoom');
+                else if (activeMotion === 'pulse') el.classList.add('motion-pulse');
+                else if (activeMotion === 'shake') el.classList.add('motion-shake');
+                if (vfxState.glitch) el.classList.add('vfx-glitch-on');
+            });
+        }
+
+        // Web Audio API Synthesized SFX Engine
+        let audioCtx = null;
+        ['voice', 'beat', 'sfx'].forEach(ch => {
+            document.getElementById(`vol-${ch}`).addEventListener('input', (e) => {
+                document.getElementById(`vol-${ch}-val`).textContent = `${e.target.value}%`;
+            });
+        });
+
+        function playSynthSfx(type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const sfxGainLevel = (parseInt(document.getElementById('vol-sfx').value, 10) / 100) * 0.25;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'whoosh') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.exponentialRampToValueAtTime(920, now + 0.25);
+                    gain.gain.setValueAtTime(0.01, now);
+                    gain.gain.linearRampToValueAtTime(sfxGainLevel, now + 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+                    osc.start(now);
+                    osc.stop(now + 0.33);
+                } else if (type === 'bass') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(135, now);
+                    osc.frequency.exponentialRampToValueAtTime(36, now + 0.45);
+                    gain.gain.setValueAtTime(sfxGainLevel * 1.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'pop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(1180, now + 0.09);
+                    gain.gain.setValueAtTime(sfxGainLevel, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(1400, now);
+                    osc.frequency.exponentialRampToValueAtTime(240, now + 0.07);
+                    gain.gain.setValueAtTime(sfxGainLevel * 0.7, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.09);
+                }
+            } catch (err) {
+                // Audio context blocked fallback
+            }
+        }
+
+        // Animated Canvas Loop for Built-In Demo Clips + Live Playback Timecode
+        let safeZonesOn = false;
+        function toggleSafeZones() {
+            safeZonesOn = !safeZonesOn;
+            document.getElementById('overlay-safe-zones').classList.toggle('hidden', !safeZonesOn);
+            document.getElementById('safe-zone-btn').textContent = `Safe-Zones: ${safeZonesOn ? 'ON' : 'OFF'}`;
+        }
+
+        function toggleStudioPlayback() {
+            isPlaying = !isPlaying;
+            document.getElementById('transport-play-btn').textContent = isPlaying ? 'Pause' : 'Play';
+            if (isUploadedMode) {
+                if (isPlaying) html5Video.play().catch(() => {});
+                else html5Video.pause();
+            }
+        }
+
+        function stepSingleFrame() {
+            playheadSec = (playheadSec + 0.04) % 15;
+            updateScrubberUI();
+        }
+
+        function razorSplitClip() {
+            splitCount += 1;
+            document.getElementById('timeline-speed-tag').textContent = `${playbackSpeed.toFixed(1)}x • ${splitCount} SPLITS`;
+            document.getElementById('split-status-toast').textContent = `Razor Cut Added at ${playheadSec.toFixed(2)}s`;
+        }
+
+        const scrubberEl = document.getElementById('studio-scrubber');
+        const trimInEl = document.getElementById('studio-trim-in');
+        const trimOutEl = document.getElementById('studio-trim-out');
+
+        function updateScrubberUI() {
+            scrubberEl.value = playheadSec.toFixed(1);
+            document.getElementById('scrubber-time-val').textContent = `${playheadSec.toFixed(1)}s`;
+            const whole = Math.floor(playheadSec);
+            const hundredths = Math.floor((playheadSec - whole) * 100);
+            document.getElementById('studio-timecode-readout').textContent =
+                `00:${String(whole).padStart(2, '0')}.${String(hundredths).padStart(2, '0')} / 00:15.00`;
+        }
+
+        scrubberEl.addEventListener('input', (e) => {
+            playheadSec = parseFloat(e.target.value);
+            if (isUploadedMode && html5Video.duration) {
+                html5Video.currentTime = (playheadSec / 15) * html5Video.duration;
+            }
+            updateScrubberUI();
+        });
+        trimInEl.addEventListener('input', (e) => {
+            document.getElementById('trim-in-val').textContent = `${parseFloat(e.target.value).toFixed(1)}s`;
+        });
+        trimOutEl.addEventListener('input', (e) => {
+            document.getElementById('trim-out-val').textContent = `${parseFloat(e.target.value).toFixed(1)}s`;
+        });
+
+        let lastFrameTs = performance.now();
+        function renderAnimatedDemoFrame(now) {
+            const dt = (now - lastFrameTs) / 1000;
+            lastFrameTs = now;
+
+            if (isPlaying) {
+                playheadSec += dt * playbackSpeed;
+                if (playheadSec > 15) playheadSec = 0;
+                updateScrubberUI();
+            }
+
+            if (!isUploadedMode) {
+                const w = demoCanvas.width;
+                const h = demoCanvas.height;
+                const clip = demoClips[activeClipIdx];
+                const bgRemoved = toggleAiBg.checked;
+
+                demoCtx.clearRect(0, 0, w, h);
+
+                // Draw scene backdrop only if AI Background Remover is OFF
+                if (!bgRemoved) {
+                    const grad = demoCtx.createLinearGradient(0, 0, w, h);
+                    grad.addColorStop(0, '#0B0F1A');
+                    grad.addColorStop(0.5, clip.accent + '55');
+                    grad.addColorStop(1, '#07090E');
+                    demoCtx.fillStyle = grad;
+                    demoCtx.fillRect(0, 0, w, h);
+
+                    // Animated equalizer/motion grid lines
+                    demoCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+                    demoCtx.lineWidth = 1;
+                    for (let x = 0; x < w; x += 40) {
+                        demoCtx.beginPath();
+                        demoCtx.moveTo(x, 0);
+                        demoCtx.lineTo(x, h);
+                        demoCtx.stroke();
+                    }
+                }
+
+                // Isolated Foreground Subject Silhouette + Ring
+                const cx = w / 2 + Math.sin(playheadSec * 1.8) * 14;
+                const cy = h / 2 - 8 + Math.cos(playheadSec * 2.2) * 5;
+
+                demoCtx.save();
+                demoCtx.beginPath();
+                demoCtx.arc(cx, cy - 22, 34, 0, Math.PI * 2);
+                demoCtx.fillStyle = '#F8FAFC';
+                demoCtx.shadowColor = clip.secondary;
+                demoCtx.shadowBlur = 22;
+                demoCtx.fill();
+
+                demoCtx.beginPath();
+                demoCtx.roundRect(cx - 56, cy + 18, 112, 68, 28);
+                demoCtx.fillStyle = clip.accent;
+                demoCtx.fill();
+                demoCtx.restore();
+
+                // Clip Title Tag
+                demoCtx.fillStyle = 'rgba(7, 9, 14, 0.72)';
+                demoCtx.beginPath();
+                demoCtx.roundRect(w / 2 - 135, 18, 270, 28, 14);
+                demoCtx.fill();
+
+                demoCtx.fillStyle = '#E2E8F0';
+                demoCtx.font = 'bold 12px Inter, sans-serif';
+                demoCtx.textAlign = 'center';
+                demoCtx.fillText(`${clip.label} • 4K 60fps Live Feed`, w / 2, 36);
+            }
+
+            requestAnimationFrame(renderAnimatedDemoFrame);
+        }
+
+        window.addEventListener('load', () => {
+            requestAnimationFrame(renderAnimatedDemoFrame);
+        });
+
+        // =========================================================================
+        // 4. EXPORT MODAL, CALLBACK MODAL & FAQ ACCORDION
+        // =========================================================================
+        let exportQuality = '4K 60fps';
+        let renderTimer = null;
+
+        function setExportQuality(q) {
+            exportQuality = q;
+            document.querySelectorAll('.eq-btn').forEach(btn => {
+                if (btn.dataset.eq === q) {
+                    btn.classList.add('bg-indigoBrand', 'text-white');
+                    btn.classList.remove('bg-canvas', 'text-slate-300');
+                } else {
+                    btn.classList.remove('bg-indigoBrand', 'text-white');
+                    btn.classList.add('bg-canvas', 'text-slate-300');
+                }
+            });
+        }
+
+        function openExportModal() {
+            const { rem, tot, plan } = readQuota();
+            const modal = document.getElementById('export-modal');
+            const availView = document.getElementById('export-available-view');
+            const exhView = document.getElementById('export-exhausted-view');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (rem <= 0) {
+                availView.classList.add('hidden');
+                exhView.classList.remove('hidden');
+                return;
+            }
+
+            exhView.classList.add('hidden');
+            availView.classList.remove('hidden');
+            document.getElementById('render-progress-panel').classList.add('hidden');
+            document.getElementById('render-progress-bar').style.width = '0%';
+            document.getElementById('btn-begin-render').classList.remove('hidden');
+            document.getElementById('btn-download-rendered').classList.add('hidden');
+
+            document.getElementById('export-modal-quota-copy').innerHTML = tot >= 99999
+                ? `Active Plan: <strong class="text-amber-300">${plan}</strong> (Unlimited Watermark-Free Exports).`
+                : `You have <strong class="text-emeraldBrand">${rem}/${tot} Videos</strong> remaining on ${plan}. Exporting deducts 1 video credit.`;
+        }
+
+        function closeExportModal() {
+            if (renderTimer) clearInterval(renderTimer);
+            const modal = document.getElementById('export-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function startMasterRender() {
+            const { rem, tot } = readQuota();
+            if (rem <= 0) {
+                openExportModal();
+                return;
+            }
+
+            document.getElementById('render-progress-panel').classList.remove('hidden');
+            document.getElementById('btn-begin-render').classList.add('hidden');
+
+            let pct = 0;
+            renderTimer = setInterval(() => {
+                pct += Math.floor(Math.random() * 16) + 12;
+                if (pct >= 100) {
+                    pct = 100;
+                    clearInterval(renderTimer);
+                    if (tot < 99999) {
+                        localStorage.setItem(KEY_REM, String(Math.max(0, rem - 1)));
+                        updateQuotaDisplays();
+                    }
+                    document.getElementById('render-stage-text').textContent = 'Completed — Watermark-Free MP4 Ready!';
+                    document.getElementById('btn-download-rendered').classList.remove('hidden');
+                } else if (pct < 40) {
+                    document.getElementById('render-stage-text').textContent = 'Stage 1/3: AI Upscaling & Background Cutout...';
+                } else if (pct < 78) {
+                    document.getElementById('render-stage-text').textContent = 'Stage 2/3: Audio Mastering (-14 LUFS)...';
+                } else {
+                    document.getElementById('render-stage-text').textContent = `Stage 3/3: Encoding ${exportQuality} MP4...`;
+                }
+                document.getElementById('render-progress-bar').style.width = `${pct}%`;
+                document.getElementById('render-pct-text').textContent = `${pct}%`;
+            }, 190);
+        }
+
+        function triggerSimulatedDownload() {
+            const title = document.getElementById('studio-project-title').value.replace(/\.[^/.]+$/, '');
+            const { rem, tot, plan } = readQuota();
+            const content = [
+                'CutFlow Studio — Master Export Summary',
+                '======================================',
+                `Project: ${title}_CutFlow_${exportQuality.replace(/\s+/g, '_')}.mp4`,
+                `Watermark: NONE (Zero Watermark)`,
+                `AI Background Remover: ${toggleAiBg.checked ? 'Active (' + activeBackdrop + ')' : 'Off'}`,
+                `AI Auto-Captions: ${document.getElementById('toggle-ai-captions').checked ? document.getElementById('input-caption-text').value : 'Off'}`,
+                `Color LUT: ${activeLut.toUpperCase()}`,
+                `Playback Speed: ${playbackSpeed.toFixed(1)}x`,
+                `Plan Status: ${plan} (${tot >= 99999 ? 'Unlimited' : rem + '/' + tot + ' remaining'})`,
+                `24/7 WhatsApp Support: +91 9160590555`
+            ].join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${title}_CutFlow_Export.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Plan Activation / Callback Modal
+        let pendingPlanMeta = { label: 'Pro Growth — ₹299/mo', price: 299, limit: 100 };
+
+        function openQuotaModal() {
+            openCallbackModal('Pro Growth — ₹299/mo (100 Videos)', 299, 100);
+        }
+
+        function openCallbackModal(label, price, limit) {
+            pendingPlanMeta = { label, price, limit };
+            document.getElementById('callback-plan-heading').textContent = label;
+            document.getElementById('callback-confirmation-box').classList.add('hidden');
+            const encoded = encodeURIComponent(`Hi CutFlow Studio! I want to activate ${label}.`);
+            document.getElementById('callback-whatsapp-link').href = `https://wa.me/919160590555?text=${encoded}`;
+
+            const modal = document.getElementById('callback-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCallbackModal() {
+            const modal = document.getElementById('callback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('callback-request-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const uName = document.getElementById('cb-user-name').value.trim();
+            const uPhone = document.getElementById('cb-user-phone').value.trim();
+            const box = document.getElementById('callback-confirmation-box');
+            box.classList.remove('hidden');
+            box.innerHTML = `Thank you, <strong>${uName}</strong>! Request logged for <strong>${uPhone}</strong> (${pendingPlanMeta.label}). Our team on <strong>+91 9160590555</strong> will reach out shortly—your studio quota has also been preview-unlocked!`;
+
+            localStorage.setItem(KEY_REM, String(pendingPlanMeta.limit));
+            localStorage.setItem(KEY_TOT, String(pendingPlanMeta.limit));
+            localStorage.setItem(KEY_PLAN, pendingPlanMeta.label);
+            updateQuotaDisplays();
+        });
+
+        // FAQ Accordion Toggle
+        function toggleFaqItem(index) {
+            const items = document.querySelectorAll('#faq-accordion > div');
+            items.forEach((item, idx) => {
+                const body = item.querySelector('.faq-body');
+                const icon = item.querySelector('.faq-icon');
+                if (idx === index) {
+                    const isHidden = body.classList.contains('hidden');
+                    body.classList.toggle('hidden', !isHidden);
+                    icon.textContent = isHidden ? '−' : '+';
+                } else {
+                    body.classList.add('hidden');
+                    icon.textContent = '+';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+```
